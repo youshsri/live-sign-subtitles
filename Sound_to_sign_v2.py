@@ -12,6 +12,8 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips, CompositeVideo
 
 from pydub import AudioSegment
 
+from pytube import YouTube
+
 
 def get_transcript(filename):
     '''This is function uses Googles natural language processing to convert the audio to text. 
@@ -142,7 +144,15 @@ def get_signs(transcript, videolength):
             
             video_array.append(filename)
     
-    translated_video = VideoFileClip(video_array[0])  
+    
+    if len(video_array) > 0:
+        # If there are words in the sequence that we have in our dataset, initiate the concatenating
+        translated_video = VideoFileClip(video_array[0])  
+    
+    else:
+        return VideoFileClip(r'/Users/hugofrelin/Desktop/Year2/DAPP2/Dataset/blackscreen.mp4')
+        # Else, return a 10 second long black screen. 
+        # The black screen is ugly, so we will have to think of something better later on.
     
     for i in range(1, len(video_array)):
     #Iterates over the list of videos and adds them to the signing video
@@ -151,34 +161,70 @@ def get_signs(transcript, videolength):
         
         translated_video = concatenate_videoclips([translated_video, addition])
     
+    translated_video_dur = translated_video.duration 
+    # Gets the length of the sign video. So we can adjust it to be exactly 10 seconds.
     
-    if translated_video.duration > videolength:
-        
+    if translated_video_dur > videolength:
+    # If it is longer, we speed it up.
         factor = translated_video.duration / videolength
         
         translated_video = translated_video.fx(vfx.speedx, factor)
     
-    # if translated_video.duration < videolength:
-       
-        #Add fade to the end so that it becomes of length videolength
+    if translated_video_dur < videolength:
+    # If it is shorter, we fill out the end with a black sreen.
+    
+        blackscreen = VideoFileClip(r'/Users/hugofrelin/Desktop/Year2/DAPP2/Dataset/blackscreen.mp4')
+        
+        blackscreen_time = 10 - translated_video_dur
+        
+        multiplier = 10 / blackscreen_time
+        
+        blackscreen = blackscreen.fx(vfx.speedx, multiplier)
+        
+        translated_video = concatenate_videoclips([translated_video, blackscreen])
         
     
     return translated_video
 
 
 
+def download_YT_video(url, video_name):
+    try:
+        video = YouTube(url)
+        stream = video.streams.filter()
+        stream[0].download(filename = video_name)
+        filename = video_name + '.mp4'
+        return filename
+    except:
+        if url == None:
+            raise ValueError("Must have an existing url")
+
+
+
 def main():
     
     videolength = 10
+    #length of each segment that is being translated
     
-    file_to_analyse = "dora.mp4" #Enter the name of the video to analyse
+    url = 'https://www.youtube.com/watch?v=MTbVu3aX9OE&ab_channel=BBCNews'
+    # The youtube url to be translated
+    
+    video_name = 'news_broadcast'
+    #What you want the video to be stored as one your computer
+    
+    download_YT_video(url, video_name)
+    # Calling function to retrieve yt video
+    
+    file_to_analyse = video_name + '.mp4' 
+    # This is the video we will translate
     
     file_to_analyse_instance = VideoFileClip(file_to_analyse)
+    # Creates an instance of class VideoFileClip based on the video
     
-    get_wav(file_to_analyse, "dora_sound.wav")
+    get_wav(file_to_analyse, video_name + ".wav")
     #Gets a .wav file from the video
         
-    subclip_dictionary = create_subclips("dora_sound.wav")
+    subclip_dictionary = create_subclips(video_name + ".wav")
     #Call the create_subclips function. This returns a dictionary with the audio divided into 10sec clips
     
     sign_translations = {}
@@ -210,24 +256,19 @@ def main():
             sign_videos_concat = concatenate_videoclips([sign_videos_concat, sign_translations[key]])
     
     
-    video = CompositeVideoClip([file_to_analyse_instance , sign_videos_concat.set_position((0.7,0.6), relative = True)])
+    video = CompositeVideoClip([file_to_analyse_instance , sign_videos_concat.set_position((0.6,0.5), relative = True)])
     #Concatenates the translation video to original, and puts translation in the corner
     
     
-    video.write_videofile("Dora_with_signs.mp4")
+    video.write_videofile("newsbroadcast_with_signs.mp4")
     
     
     
      
 if __name__ == "__main__":
     main()
+     
+if __name__ == "__main__":
+    main()
     
-    
-    
-    # for i in range(1, len(subclips) + 1):
-        
-    #     short_transcript = get_transcript("subclip" + str(i) + ".wav")
-        
-    #     print(short_transcript)
-
-    1+1
+  
