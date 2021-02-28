@@ -46,7 +46,6 @@ def segment_silence(audio_clip, filename, min_silence_range, silence_threshold=-
     # export silence-segmented AudioSegment object as a wav file
     concat_audio.export(filename, format='wav')
 
-
 def main():
 
     filename = ""
