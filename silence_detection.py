@@ -48,13 +48,17 @@ def segment_silence(audio_clip, filename, min_silence_range, silence_threshold=-
 
 def main():
 
+    # define filenames
     filename = ""
     out_dest_filename = "silence_cut.wav"
 
+    # find silence ranges
     sound, silence_ranges = detect_silence_in_file(filename, silence_threshold=-30)
 
+    # segment sound 
     segment_silence(sound, out_dest_filename, 1000)
 
+    # print silence ranges for reference
     print(silence_ranges)
 
 if __name__ == "__main__":
