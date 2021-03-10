@@ -1,4 +1,6 @@
 import streamlit as st
+import v3_1 as sign 
+
 #unsafe_allow_html = True
 #This mockup website displays the YT video they asked for
 col1, col2, col3 = st.beta_columns(3)
@@ -17,16 +19,11 @@ video_file_name = st.text_input(" ")
 # check if file is local to directory or url link to YouTube
 if video_file_name:
 
-    # check if the file is not a YouTube url
-    if "youtube" not in video_file_name:
-        video_file = open(video_file_name, 'rb')
-        video_bytes = video_file.read()
+    sign.main(video_file_name)
 
-        st.video(video_bytes)
-    
-    # check if the file is a YouTube url
-    if "youtube" in video_file_name:
-        st.video(video_file_name)
+    video_file = open("video_with_signs.mp4", 'rb')
+    video_bytes = video_file.read()
+    st.video(video_bytes)
 
 # allow for the upload of video files in mp4 format
 message = "Please upload a file in .mp4 format."

@@ -146,23 +146,19 @@ def get_transcript(filename):
     
     return r.recognize_google(audio)
 
-
-
 def pair_word_with_signvideo(word):
     '''Pairs up each word with a video from the database of signvideos'''
     
-    filename = r'/Users/Lito/Desktop/Imperial/Year 2/Sign Language project/Dataset/'+ str(word) + ".mp4"
+    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Dataset/'+ str(word) + ".mp4"
     
     sign_video = VideoFileClip(filename)
     
     return sign_video
 
-
-
 def does_file_exist(word):
     '''Checks if the video is in the database or not'''
     
-    filename = r'/Users/Lito/Desktop/Imperial/Year 2/Sign Language project/Dataset/'+ str(word) + ".mp4"
+    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Dataset/'+ str(word) + ".mp4"
     
     try:
         open(filename)
@@ -171,8 +167,6 @@ def does_file_exist(word):
         return False
     
     return True #else return True
-
-
 
 def get_wav(filename, name):
     
@@ -190,8 +184,6 @@ def get_wav(filename, name):
     # convert wav to mp3                                                            
     sound = AudioSegment.from_mp3(src)
     sound.export(dst, format="wav")
-
-
 
 def create_subclips(filename):
     '''Takes an audiofile and splits it into 10 seconds intervals, 
@@ -301,7 +293,7 @@ def get_signs(transcript, videolength, past, future):
         if does_file_exist(word) == True:
         
             
-            filename = r'/Users/Lito/Desktop/Imperial/Year 2/Sign Language project/Dataset/'+ str(word) + ".mp4"
+            filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Dataset/'+ str(word) + ".mp4"
             
             
             video_array.append(filename)
@@ -312,7 +304,7 @@ def get_signs(transcript, videolength, past, future):
         translated_video = VideoFileClip(video_array[0])  
     
     else:
-        return VideoFileClip(r'/Users/Lito/Desktop/Imperial/Year 2/Sign Language project/Dataset/blackscreen.mp4')
+        return VideoFileClip(r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Dataset/blackscreen.mp4')
         # Else, return a 10 second long black screen. 
         # The black screen is ugly, so we will have to think of something better later on.
     
@@ -335,7 +327,7 @@ def get_signs(transcript, videolength, past, future):
     if translated_video_dur < videolength:
     # If it is shorter, we fill out the end with a black sreen.
     
-        blackscreen = VideoFileClip(r'/Users/Lito/Desktop/Imperial/Year 2/Sign Language project/Dataset/blackscreen.mp4')
+        blackscreen = VideoFileClip(r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Dataset/blackscreen.mp4')
         
         blackscreen_time = 10 - translated_video_dur
         
@@ -360,24 +352,21 @@ def download_YT_video(url, video_name):
         if url == None:
             raise ValueError("Must have an existing url")
 
-
-
-def main():
+def main(filename):
     
     videolength = 10
     #length of each segment that is being translated
     
-    url = 'https://www.youtube.com/watch?v=MTbVu3aX9OE&ab_channel=BBCNews'
-    # The youtube url to be translated
-    
     video_name = 'video1'
     #What you want the video to be stored as one your computer
-    
-    download_YT_video(url, video_name)
-    # Calling function to retrieve yt video
-    
-    
-    file_to_analyse = video_name + '.mp4' 
+
+    if "youtube" in filename:
+        download_YT_video(filename, video_name)
+        file_to_analyse = video_name + '.mp4'
+        # Calling function to retrieve yt video
+    else:
+        file_to_analyse = filename
+         
     # This is the video we will translate
     
     file_to_analyse_instance = VideoFileClip(file_to_analyse)
@@ -398,12 +387,10 @@ def main():
     
     for key in range(1,len(subclip_dictionary)+1):   
     #This for loop iterates over the 10sec audio clips and gets a translational sign video for each.
-    #The videos are then put into the deictionary sign_translations and named in order.
+    #The videos are then put into the dictionary sign_translations and named in order.
     #video1 video2 etc
     
-    
-        transcript = get_transcript("subclip" + str(key) + ".wav")
-        
+        transcript = get_transcript("subclip" + str(key) + ".wav")     
         
         if key == len(subclip_dictionary):
             future_trans = 0
@@ -421,11 +408,9 @@ def main():
         
         index = index + 1
         
-    
     sign_videos_concat = sign_translations['video1']
     #Creates the final sign translation by adding video1. The reason for doing this is that we cannot 
     # add videos to an empty instances of VideoFileClip (at least I didn't find a way to do it)
-    
     
     for key in sign_translations:
     #Adds all the sign translations in order, but skipping first one since its already added.
@@ -434,17 +419,12 @@ def main():
             
             sign_videos_concat = concatenate_videoclips([sign_videos_concat, sign_translations[key]])
     
-    
     video = CompositeVideoClip([file_to_analyse_instance , sign_videos_concat.set_position((0.6,0.5), relative = True)])
-    #Concatenates the translation video to original, and puts translation in the corner
-    
+    #Concatenates the translation video to original, and puts translation in the corner 
     
     video.write_videofile("video_with_signs.mp4")
-    
-    
-    
+
+    return True   
      
 if __name__ == "__main__":
-    main()
-    
-  
+    main("https://www.youtube.com/watch?v=bv20ZoBcdO8")
