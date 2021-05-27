@@ -1,4 +1,7 @@
 import streamlit as st
+
+import sound_to_sign_v4 as s2s
+
 #unsafe_allow_html = True
 #This mockup website displays the YT video they asked for
 col1, col2, col3 = st.beta_columns(3)
@@ -28,6 +31,9 @@ if video_file_name:
     if "youtube" in video_file_name:
         st.video(video_file_name)
 
+        trans, stream_trans = s2s.main(video_file_name)
+
+
 # allow for the upload of video files in mp4 format
 message = "Please upload a file in .mp4 format."
 uploaded_file = st.file_uploader(message, type=['mp4'])
@@ -40,7 +46,7 @@ if uploaded_file:
     st.video(bytes_data)
 
 about = st.sidebar.beta_expander("About us")
-about.write("We are a team of students from Imperial College London who made this WebApp for our DAPP2 project")
+about.write("We are a team of students from Imperial College London who are developing this web application for our DAPP2 project!")
 #Let's rewrite this
 contact = st.sidebar.beta_expander("Get in touch")
 contact.write("For any questions or concerns, please contact us on: ...")
