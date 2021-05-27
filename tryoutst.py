@@ -26,13 +26,17 @@ if video_file_name:
         video_bytes = video_file.read()
 
         st.video(video_bytes)
+
     
     # check if the file is a YouTube url
     if "youtube" in video_file_name:
         st.video(video_file_name)
 
-        trans, stream_trans = s2s.main(video_file_name)
+        s2s.main(video_file_name)
 
+        video_file = open('with_signs.mp4', 'rb')
+        video_bytes = video_file.read()
+        st.video(video_bytes)
 
 # allow for the upload of video files in mp4 format
 message = "Please upload a file in .mp4 format."

@@ -109,7 +109,7 @@ def does_file_exist(word):
     '''Checks if the video is in the database or not.'''
     
     # create filename path to check
-    filename = r'/Git_Dataset/' + str(word) + ".mp4"
+    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/' + str(word) + ".mp4"
     
     try:
         # check if file can be opened
@@ -121,7 +121,7 @@ def does_file_exist(word):
 def pair_word_with_signvideo(word):
     '''Pairs up each word with a video from the database of signvideos'''
     
-    filename = r'/Git_Dataset/'+ str(word) + ".mp4"
+    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/'+ str(word) + ".mp4"
     
     sign_video = VideoFileClip(filename)
     
@@ -133,6 +133,8 @@ def get_signs(transcript, videolength):
     '''
     
     video_array = []
+
+    print(transcript)
     
     transcript = transcript.split(" ") 
     #Splitting the string into a list of strings
@@ -141,11 +143,11 @@ def get_signs(transcript, videolength):
     #This loop  goes through all the words in the transcript and if there is a 
     #translation for the word it adds the filename of the translation to the list video_array
     
+        print('\n'+word)
+
         if does_file_exist(word) == True:
-        
-            
+
             filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/'+ str(word) + ".mp4"
-            
             
             video_array.append(filename)
     
@@ -218,22 +220,20 @@ def main(url):
     index = 1
 
     # pre-define transcript list
-    transcript = []
+    transcript = ""
     streamlined_trans = []
 
     # iterate through each 10 second audio clip and get text transcript for each
     for key in subclip_dictionary:   
     
         # append streamlined transcript of each 10 second audio clip into list
-        transcript.append(get_transcript(key + ".wav"))
+        transcript = get_transcript(key + ".wav")
 
         # get streamlined transcript of each 10 second audio clip
         streamlined_trans.append(dy.streamline_transcript(transcript[-1]))
 
-        print(transcript[-1])
-
         # retrieve respective signs 
-        sign_translations['video' + str(index)] = get_signs(transcript[-1], videolength)
+        sign_translations['video' + str(index)] = get_signs(transcript, videolength)
 
         index = index + 1
 
@@ -255,11 +255,13 @@ def main(url):
     
     print("Before")
 
-    video.write_videofile("newsbroadcast_with_signs.mp4")
+    filename = 'with_signs.mp4'
+
+    video.write_videofile(filename)
         
     print("Completed")
 
-    return transcript, streamlined_trans
+    return True
 
 if __name__ == "__main__":
     main()
