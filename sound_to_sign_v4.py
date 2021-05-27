@@ -144,7 +144,7 @@ def get_signs(transcript, videolength):
         if does_file_exist(word) == True:
         
             
-            filename = r'/Git_Dataset/'+ str(word) + ".mp4"
+            filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/'+ str(word) + ".mp4"
             
             
             video_array.append(filename)
@@ -229,6 +229,8 @@ def main(url):
 
         # get streamlined transcript of each 10 second audio clip
         streamlined_trans.append(dy.streamline_transcript(transcript[-1]))
+
+        print(transcript[-1])
 
         # retrieve respective signs 
         sign_translations['video' + str(index)] = get_signs(transcript[-1], videolength)
