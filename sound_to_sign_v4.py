@@ -8,6 +8,8 @@ import pafy as pf
 
 import download_youtube as dy
 
+import os
+
 def download_YT_video(url, video_name):
     '''This function will return a YT video in mp4 format to your local directory.
     This function requires a url from the user and a filename for the saved file.'''
@@ -192,6 +194,26 @@ def get_signs(transcript, videolength):
         
     return translated_video
 
+# delete files created from audio conversion and subclip process
+def save_memory():
+    
+    # define path to directory
+    cwd = os.getcwd()
+
+    try:
+        # iterate through elements in directory and check if they were produced during audio conversion/subclip process
+        for entry in os.scandir(cwd):
+
+            # if so, delete
+            if entry.path.endswith(".wav") or entry.path.endswith(".mp3") and entry.is_file():
+                os.remove(entry.name)
+
+            else:
+                continue
+
+    except:
+        raise ValueError("Error - no such files exist")
+
 def main(url):
 
     # pre-define length of clips that will be translated
@@ -241,27 +263,23 @@ def main(url):
     #Creates the final sign translation by adding video1. The reason for doing this is that we cannot 
     # add videos to an empty instances of VideoFileClip (at least I didn't find a way to do it)
     
-    
+    # adds all the sign translations in order, but skipping first one since its already added.
     for key in sign_translations:
-    #Adds all the sign translations in order, but skipping first one since its already added.
     
         if key != 'video1':
             
             sign_videos_concat = concatenate_videoclips([sign_videos_concat, sign_translations[key]])
     
     
+    # concatenate the translation video onto original in the corner
     video = CompositeVideoClip([file_to_analyse_instance , sign_videos_concat.set_position((0.6,0.5), relative = True)])
-    #Concatenates the translation video to original, and puts translation in the corner
     
-    print("Before")
-
+    # name the video with the signs overlapped and export
     filename = 'with_signs.mp4'
-
     video.write_videofile(filename)
-        
-    print("Completed")
 
-    return True
+    # delete all subclips created by process
+    save_memory()
 
 if __name__ == "__main__":
     main()
