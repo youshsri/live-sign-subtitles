@@ -1,18 +1,18 @@
+# import all necessary libraries
 import speech_recognition as sr
-
 from moviepy.editor import VideoFileClip, concatenate_videoclips, CompositeVideoClip, vfx, AudioFileClip
-
-from pydub import AudioSegment
-
+from pydub import AudioSegment, silence
 import pafy as pf
-
 import download_youtube as dy
-
 import os
 
+# define all functions required for function of main program
 def download_YT_video(url, video_name):
-    '''This function will return a YT video in mp4 format to your local directory.
-    This function requires a url from the user and a filename for the saved file.'''
+    
+    '''
+    This function will return a YT video in mp4 format to your local directory.
+    This function requires a url from the user and a filename for the saved file.
+    '''
 
     try:
         # create pafy object 
@@ -33,7 +33,9 @@ def download_YT_video(url, video_name):
         raise ValueError("URL is not valid")
 
 def get_wav(filename, name):
-    '''Takes an mp4 file and converts into a .wav file that can be transcribed. 
+    
+    '''
+    Takes an mp4 file and converts into a .wav file that can be transcribed. 
     The .wav file has the name enter
     '''    
     audioclip = AudioFileClip(filename)
@@ -48,11 +50,43 @@ def get_wav(filename, name):
     sound = AudioSegment.from_mp3(src)
     sound.export(dst, format="wav")
 
+def segment_silence(filename, min_silence_range=1000, silence_threshold=-30, keep_silence_val=10):
+    
+    '''
+    Provided the silence ranges of the AudioSegment, the AudioSegment will be segmented
+    of all silence to form a clean cut video w/o any silence. This will aid in
+    speech recognition.
+    '''
+
+    # convert filename into AudioSegment object
+    audio_clip = AudioSegment.from_wav(filename)
+
+    # segment silence out of AudioSegment object into a list of AudioSegment objects
+    audio_segment_list = silence.split_on_silence(audio_clip, min_silence_range, silence_threshold, keep_silence_val)
+
+    # create empty AudioSegment object
+    concat_audio = AudioSegment.empty()
+
+    # concatenate AudioSegment objects into single object
+    for audio_segment in audio_segment_list:
+        concat_audio += audio_segment
+
+    # update filename for exported file
+    filename = "segmented_" + filename 
+
+    # export silence-segmented AudioSegment object as a wav file
+    concat_audio.export(filename, format='wav')
+
+    return filename
+
 def create_subclips(filename):
-    '''Takes an audiofile and splits it into 10 seconds intervals, 
+    
+    '''
+    Takes an audiofile and splits it into 10 seconds intervals, 
     and then returns a dictionary with the 10 second audiofiles. 
     1st 10 seconds has key subclip1, 2nd has key subclip2 and so on.
-    Also saves the subclips as .wav files'''
+    Also saves the subclips as .wav files
+    '''
     
     audio = AudioFileClip(filename)    
         
@@ -90,7 +124,8 @@ def create_subclips(filename):
     return clips
 
 def get_transcript(filename):
-    '''This is function uses Googles natural language processing to convert the audio to text. 
+    '''
+    This is function uses Googles natural language processing to convert the audio to text. 
     Takes a filename and returns a string.
     '''
     
@@ -108,10 +143,12 @@ def get_transcript(filename):
     return r.recognize_google(audio)
 
 def does_file_exist(word):
-    '''Checks if the video is in the database or not.'''
+    '''
+    Checks if the video is in the database or not.
+    '''
     
     # create filename path to check
-    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/' + str(word) + ".mp4"
+    filename = os.getcwd() + "/Git_Dataset/" + str(word) + ".mp4"
     
     try:
         # check if file can be opened
@@ -123,7 +160,7 @@ def does_file_exist(word):
 def pair_word_with_signvideo(word):
     '''Pairs up each word with a video from the database of signvideos'''
     
-    filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/'+ str(word) + ".mp4"
+    filename = os.getcwd() + "/Git_Dataset/" + str(word) + ".mp4"
     
     sign_video = VideoFileClip(filename)
     
@@ -149,7 +186,7 @@ def get_signs(transcript, videolength):
 
         if does_file_exist(word) == True:
 
-            filename = r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/'+ str(word) + ".mp4"
+            filename = os.getcwd() + "/Git_Dataset/" + str(word) + ".mp4"
             
             video_array.append(filename)
     
@@ -159,7 +196,7 @@ def get_signs(transcript, videolength):
         translated_video = VideoFileClip(video_array[0])  
     
     else:
-        return VideoFileClip(r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/blackscreen.mp4')
+        return VideoFileClip(os.getcwd() + "/Git_Dataset/blackscreen.mp4")
         # Else, return a 10 second long black screen. 
         # The black screen is ugly, so we will have to think of something better later on.
     
@@ -182,7 +219,7 @@ def get_signs(transcript, videolength):
     if translated_video_dur < videolength:
     # If it is shorter, we fill out the end with a black sreen.
     
-        blackscreen = VideoFileClip(r'/Users/ayoushsrivastava/Documents/GitHub/live-sign-subtitles/Git_Dataset/blackscreen.mp4')
+        blackscreen = VideoFileClip(os.getcwd() + "/Git_Dataset/blackscreen.mp4")
         
         blackscreen_time = 10 - translated_video_dur
         
@@ -234,10 +271,13 @@ def main(url):
     # retrieve wav file
     get_wav(video_name, audio_file_name)
 
-    # create subclips
-    subclip_dictionary = create_subclips(audio_file_name)
+    # segment silence out of wav file 
+    filename = segment_silence(audio_file_name)
 
-    #
+    # create subclips
+    subclip_dictionary = create_subclips(filename)
+
+    # initialise sign translations dictionary
     sign_translations = {}
     index = 1
 
